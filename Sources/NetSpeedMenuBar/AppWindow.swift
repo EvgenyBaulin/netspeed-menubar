@@ -128,6 +128,12 @@ struct SpeedTestSectionView: View {
                     }
                 }
                 .disabled(tester.isRunning)
+                if tester.isRunning {
+                    Text("\(tester.phase?.label ?? "")… \(MbpsFormatter.string(tester.progressMbps))")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
 
                 Picker(L("Auto test"), selection: $settings.speedTestInterval) {
                     ForEach(SpeedTestInterval.allCases) { interval in

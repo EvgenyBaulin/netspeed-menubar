@@ -74,17 +74,25 @@ struct PopoverView: View {
             if speedTester.isRunning {
                 ProgressView()
                     .controlSize(.small)
-                Text(L("Testing…"))
+                Text("\(speedTester.phase?.label ?? L("Testing…"))… \(MbpsFormatter.string(speedTester.progressMbps))")
                     .font(.caption)
+                    .monospacedDigit()
                     .foregroundStyle(.secondary)
             } else if let result = speedTester.lastResult {
                 Text("↓ \(MbpsFormatter.string(result.downloadMbps))   ↑ \(MbpsFormatter.string(result.uploadMbps))")
                     .font(.caption)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
-                Text(result.date.formatted(date: .omitted, time: .shortened))
+                // A failed re-test must not hide the previous valid result.
+                Text(speedTester.lastFailed
+                    ? L("Test failed")
+                    : result.date.formatted(date: .omitted, time: .shortened))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+            } else if speedTester.lastFailed {
+                Text(L("Test failed"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else {
                 Text(L("Speed Test"))
                     .font(.caption)

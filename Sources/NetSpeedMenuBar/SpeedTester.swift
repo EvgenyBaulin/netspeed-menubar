@@ -1,5 +1,17 @@
 import Foundation
 
+enum SpeedTestPhase: Sendable {
+    case download
+    case upload
+
+    var label: String {
+        switch self {
+        case .download: return L("Download")
+        case .upload: return L("Upload")
+        }
+    }
+}
+
 /// Active channel-capacity measurement (a speed test). The passive monitor in
 /// the menu bar shows actual current traffic; available bandwidth can only be
 /// measured by loading the connection, which is what this does — on demand or
@@ -17,6 +29,13 @@ final class SpeedTester: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var lastResult: Result?
     @Published private(set) var lastFailed = false
+    /// Current test phase and the live measured throughput so far, so the UI
+    /// can show what is happening while the test runs.
+    @Published private(set) var phase: SpeedTestPhase?
+    @Published private(set) var progressMbps: Double?
+    /// The download figure of the test in progress (shown while the upload
+    /// phase runs; `lastResult` is only written when the whole test ends).
+    @Published private(set) var interimDownloadMbps: Double?
 
     weak var monitor: NetMonitor?
 
@@ -47,18 +66,41 @@ final class SpeedTester: ObservableObject {
         autoTimer = nil
     }
 
+    /// Runs a test unless the stored result is younger than `maxAge` —
+    /// used when capacity mode needs a trustworthy number (mode switch,
+    /// app launch).
+    func refreshIfStale(maxAge: TimeInterval) {
+        let fresh = lastResult.map { Date().timeIntervalSince($0.date) <= maxAge } ?? false
+        if !fresh { run() }
+    }
+
     func run() {
         guard !isRunning else { return }
         isRunning = true
         lastFailed = false
+        phase = .download
+        progressMbps = nil
+        interimDownloadMbps = nil
         // Capture latency before the probes saturate the link — under load it
         // would measure bufferbloat, not the idle ping.
         let idlePing = monitor?.ping
+
+        let onProgress: @Sendable (Double) -> Void = { [weak self] mbps in
+            Task { @MainActor in self?.progressMbps = mbps }
+        }
+
         Task { [weak self] in
-            let download = await SpeedProbe.download(cap: 8)
-            let upload = await SpeedProbe.upload(cap: 8)
+            let download = await SpeedProbe.download(cap: 8, onProgress: onProgress)
             guard let self else { return }
+            self.phase = .upload
+            self.progressMbps = nil
+            self.interimDownloadMbps = download
+
+            let upload = await SpeedProbe.upload(cap: 8, onProgress: onProgress)
             self.isRunning = false
+            self.phase = nil
+            self.progressMbps = nil
+            self.interimDownloadMbps = nil
             guard download != nil || upload != nil else {
                 self.lastFailed = true
                 return
@@ -93,10 +135,11 @@ enum SpeedProbe {
     /// instrument itself at roughly 100–150 MB/s). Timing starts at the first
     /// received chunk so connection setup doesn't dilute the result; the
     /// delegate cancels the task once `cap` seconds of data have been timed.
-    static func download(cap: TimeInterval) async -> Double? {
+    /// `onProgress` receives the running Mbit/s a few times per second.
+    static func download(cap: TimeInterval, onProgress: (@Sendable (Double) -> Void)? = nil) async -> Double? {
         var request = URLRequest(url: downloadURL)
         request.timeoutInterval = 15 // idle timeout; wall clock is bounded below
-        let delegate = DownloadProbeDelegate(cap: cap)
+        let delegate = DownloadProbeDelegate(cap: cap, onProgress: onProgress)
         let task = URLSession.shared.dataTask(with: request)
         task.delegate = delegate
 
@@ -120,15 +163,16 @@ enum SpeedProbe {
     /// socket-buffer burst and the last callback — this excludes connection
     /// setup, the post-upload response wait, and most of the buffer-fill
     /// distortion. The payload is large enough that the time cap, not the
-    /// payload size, normally ends the test.
-    static func upload(cap: TimeInterval) async -> Double? {
+    /// payload size, normally ends the test. `onProgress` receives the
+    /// running Mbit/s a few times per second.
+    static func upload(cap: TimeInterval, onProgress: (@Sendable (Double) -> Void)? = nil) async -> Double? {
         var uploadRequest = URLRequest(url: uploadURL)
         uploadRequest.httpMethod = "POST"
         uploadRequest.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         uploadRequest.timeoutInterval = cap + 10
         let request = uploadRequest
         let payload = Data(count: uploadPayloadSize)
-        let delegate = UploadProbeDelegate()
+        let delegate = UploadProbeDelegate(onProgress: onProgress)
 
         enum Outcome: Sendable {
             case finished(Measurement?)
@@ -166,6 +210,10 @@ enum SpeedProbe {
         }
         return Double(measurement.bytes) * 8 / measurement.seconds / 1_000_000
     }
+
+    static func mbps(_ measurement: Measurement) -> Double {
+        Double(measurement.bytes) * 8 / measurement.seconds / 1_000_000
+    }
 }
 
 /// Counts received chunk sizes and cancels the task once `cap` seconds have
@@ -175,12 +223,15 @@ private final class DownloadProbeDelegate: NSObject, URLSessionDataDelegate, @un
     private let lock = NSLock()
     private let clock = ContinuousClock()
     private let cap: TimeInterval
+    private let onProgress: (@Sendable (Double) -> Void)?
     private var firstChunkAt: ContinuousClock.Instant?
+    private var lastEmitAt: ContinuousClock.Instant?
     private var bytes: Int64 = 0
     private var continuation: CheckedContinuation<SpeedProbe.Measurement?, Never>?
 
-    init(cap: TimeInterval) {
+    init(cap: TimeInterval, onProgress: (@Sendable (Double) -> Void)? = nil) {
         self.cap = cap
+        self.onProgress = onProgress
     }
 
     func measure(with task: URLSessionDataTask) async -> SpeedProbe.Measurement? {
@@ -201,11 +252,20 @@ private final class DownloadProbeDelegate: NSObject, URLSessionDataDelegate, @un
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        let elapsed: Double = lock.withLock {
-            if firstChunkAt == nil { firstChunkAt = clock.now }
+        let (elapsed, liveMbps): (Double, Double?) = lock.withLock {
+            let now = clock.now
+            if firstChunkAt == nil { firstChunkAt = now }
             bytes += Int64(data.count)
-            return Self.seconds(of: clock.now - firstChunkAt!)
+            let elapsed = Self.seconds(of: now - firstChunkAt!)
+            var live: Double? = nil
+            if elapsed > 0.2,
+               lastEmitAt.map({ Self.seconds(of: now - $0) > 0.3 }) ?? true {
+                lastEmitAt = now
+                live = Double(bytes) * 8 / elapsed / 1_000_000
+            }
+            return (elapsed, live)
         }
+        if let liveMbps { onProgress?(liveMbps) }
         if elapsed >= cap {
             dataTask.cancel()
         }
@@ -235,20 +295,20 @@ private final class DownloadProbeDelegate: NSObject, URLSessionDataDelegate, @un
 private final class UploadProbeDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     private let lock = NSLock()
     private let clock = ContinuousClock()
+    private let onProgress: (@Sendable (Double) -> Void)?
     private var callbackCount = 0
     private var anchorAt: ContinuousClock.Instant?
     private var anchorBytes: Int64 = 0
     private var lastAt: ContinuousClock.Instant?
     private var lastBytes: Int64 = 0
+    private var lastEmitAt: ContinuousClock.Instant?
+
+    init(onProgress: (@Sendable (Double) -> Void)? = nil) {
+        self.onProgress = onProgress
+    }
 
     var measurement: SpeedProbe.Measurement? {
-        lock.withLock {
-            guard let anchorAt, let lastAt, lastBytes > anchorBytes else { return nil }
-            return SpeedProbe.Measurement(
-                bytes: lastBytes - anchorBytes,
-                seconds: DownloadProbeDelegate.seconds(of: lastAt - anchorAt)
-            )
-        }
+        lock.withLock { currentMeasurement() }
     }
 
     func urlSession(
@@ -258,7 +318,7 @@ private final class UploadProbeDelegate: NSObject, URLSessionTaskDelegate, @unch
         totalBytesSent: Int64,
         totalBytesExpectedToSend: Int64
     ) {
-        lock.withLock {
+        let liveMbps: Double? = lock.withLock {
             callbackCount += 1
             let now = clock.now
             if anchorAt == nil, callbackCount >= 3 {
@@ -267,6 +327,22 @@ private final class UploadProbeDelegate: NSObject, URLSessionTaskDelegate, @unch
             }
             lastAt = now
             lastBytes = totalBytesSent
+
+            guard let current = currentMeasurement(), current.seconds > 0.2,
+                  lastEmitAt.map({ DownloadProbeDelegate.seconds(of: now - $0) > 0.3 }) ?? true
+            else { return nil }
+            lastEmitAt = now
+            return SpeedProbe.mbps(current)
         }
+        if let liveMbps { onProgress?(liveMbps) }
+    }
+
+    /// Callers must hold `lock`.
+    private func currentMeasurement() -> SpeedProbe.Measurement? {
+        guard let anchorAt, let lastAt, lastBytes > anchorBytes else { return nil }
+        return SpeedProbe.Measurement(
+            bytes: lastBytes - anchorBytes,
+            seconds: DownloadProbeDelegate.seconds(of: lastAt - anchorAt)
+        )
     }
 }

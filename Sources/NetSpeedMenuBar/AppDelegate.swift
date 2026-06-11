@@ -23,6 +23,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         monitor.start()
         speedTester.monitor = monitor
         speedTester.applyAutoInterval(settings.speedTestInterval)
+        if settings.barContent == .capacity {
+            // The bar shows capacity: don't sit on a stale persisted number
+            // until the first auto-test fires.
+            let interval = settings.speedTestInterval == .off
+                ? SpeedTestInterval.minutes30 : settings.speedTestInterval
+            speedTester.refreshIfStale(maxAge: TimeInterval(interval.rawValue * 60))
+        }
         setUpStatusItem()
         setUpPopover()
     }

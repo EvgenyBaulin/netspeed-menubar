@@ -118,13 +118,7 @@ struct SettingsView: View {
             }
             // A persisted result can be days old (and from another network);
             // refresh unless it is younger than the auto-test interval.
-            let maxAge = TimeInterval(settings.speedTestInterval.rawValue * 60)
-            let isFresh = speedTester.lastResult.map {
-                Date().timeIntervalSince($0.date) <= maxAge
-            } ?? false
-            if !isFresh {
-                speedTester.run()
-            }
+            speedTester.refreshIfStale(maxAge: TimeInterval(settings.speedTestInterval.rawValue * 60))
         }
     }
 

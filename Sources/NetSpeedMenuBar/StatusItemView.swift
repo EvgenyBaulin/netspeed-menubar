@@ -47,6 +47,18 @@ struct StatusItemView: View {
         case .traffic:
             return ByteRateFormatter.string(monitor.downSpeed)
         case .capacity:
+            // While a test runs, the active phase shows its live value so it
+            // is visible that something is happening.
+            if speedTester.isRunning {
+                switch speedTester.phase {
+                case .download:
+                    return MbpsFormatter.string(speedTester.progressMbps)
+                default:
+                    return MbpsFormatter.string(
+                        speedTester.interimDownloadMbps ?? speedTester.lastResult?.downloadMbps
+                    )
+                }
+            }
             return MbpsFormatter.string(speedTester.lastResult?.downloadMbps)
         }
     }
@@ -56,6 +68,14 @@ struct StatusItemView: View {
         case .traffic:
             return ByteRateFormatter.string(monitor.upSpeed)
         case .capacity:
+            if speedTester.isRunning {
+                switch speedTester.phase {
+                case .upload:
+                    return MbpsFormatter.string(speedTester.progressMbps)
+                default:
+                    return MbpsFormatter.string(speedTester.lastResult?.uploadMbps)
+                }
+            }
             return MbpsFormatter.string(speedTester.lastResult?.uploadMbps)
         }
     }
