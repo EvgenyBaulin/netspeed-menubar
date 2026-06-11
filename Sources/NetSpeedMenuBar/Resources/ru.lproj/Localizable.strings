@@ -16,10 +16,14 @@
 	<string>Приложения</string>
 	<key>Auto</key>
 	<string>Авто</string>
+	<key>Auto test</key>
+	<string>Автотест</string>
 	<key>B/s</key>
 	<string>Б/с</string>
 	<key>Charts</key>
 	<string>Графики</string>
+	<key>Collecting data…</key>
+	<string>Сбор данных…</string>
 	<key>Compact</key>
 	<string>Компактный</string>
 	<key>Connection lost</key>
@@ -36,8 +40,18 @@
 	<string>Единица загрузки</string>
 	<key>Duration</key>
 	<string>Длительность</string>
+	<key>Each test transfers tens of megabytes of data.</key>
+	<string>Каждый тест передаёт десятки мегабайт данных.</string>
 	<key>Ethernet</key>
 	<string>Ethernet</string>
+	<key>Every 15 min</key>
+	<string>Каждые 15 мин</string>
+	<key>Every 3 hours</key>
+	<string>Каждые 3 часа</string>
+	<key>Every 30 min</key>
+	<string>Каждые 30 мин</string>
+	<key>Every hour</key>
+	<string>Каждый час</string>
 	<key>Full</key>
 	<string>Полный</string>
 	<key>GB/s</key>
@@ -56,6 +70,10 @@
 	<string>КБ/с</string>
 	<key>Kbit/s</key>
 	<string>Кбит/с</string>
+	<key>Label</key>
+	<string>Подпись</string>
+	<key>Last test</key>
+	<string>Последний тест</string>
 	<key>Launch at Login</key>
 	<string>Запуск при входе</string>
 	<key>Log</key>
@@ -76,6 +94,8 @@
 	<string>Нет событий</string>
 	<key>Not active</key>
 	<string>Не активен</string>
+	<key>Off</key>
+	<string>Выкл</string>
 	<key>Offline</key>
 	<string>Не в сети</string>
 	<key>Per-app traffic is an approximation based on nettop; some system traffic may be unattributed.</key>
@@ -102,6 +122,8 @@
 	<string>Требуется установленное приложение (.app, см. README).</string>
 	<key>Reset</key>
 	<string>Сбросить</string>
+	<key>Run Test</key>
+	<string>Запустить тест</string>
 	<key>Sent</key>
 	<string>Отдано</string>
 	<key>Session</key>
@@ -110,6 +132,14 @@
 	<string>Настройки</string>
 	<key>Settings…</key>
 	<string>Настройки…</string>
+	<key>Speed Test</key>
+	<string>Тест скорости</string>
+	<key>Test failed</key>
+	<string>Тест не удался</string>
+	<key>Testing…</key>
+	<string>Идёт тест…</string>
+	<key>The menu bar shows actual current traffic; channel capacity is measured by loading the connection, like any speed test.</key>
+	<string>В строке меню — фактический текущий трафик; ёмкость канала измеряется нагрузкой на соединение, как в любом спидтесте.</string>
 	<key>This Month</key>
 	<string>Этот месяц</string>
 	<key>Time Window</key>

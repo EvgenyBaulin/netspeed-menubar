@@ -330,6 +330,81 @@
       "localizations" : {
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось получить трафик по приложениям (nettop)." } }
       }
+    },
+    "Label" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подпись" } }
+      }
+    },
+    "Speed Test" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тест скорости" } }
+      }
+    },
+    "Run Test" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Запустить тест" } }
+      }
+    },
+    "Testing…" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Идёт тест…" } }
+      }
+    },
+    "Last test" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Последний тест" } }
+      }
+    },
+    "Auto test" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Автотест" } }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выкл" } }
+      }
+    },
+    "Every 15 min" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Каждые 15 мин" } }
+      }
+    },
+    "Every 30 min" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Каждые 30 мин" } }
+      }
+    },
+    "Every hour" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Каждый час" } }
+      }
+    },
+    "Every 3 hours" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Каждые 3 часа" } }
+      }
+    },
+    "Each test transfers tens of megabytes of data." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Каждый тест передаёт десятки мегабайт данных." } }
+      }
+    },
+    "The menu bar shows actual current traffic; channel capacity is measured by loading the connection, like any speed test." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "В строке меню — фактический текущий трафик; ёмкость канала измеряется нагрузкой на соединение, как в любом спидтесте." } }
+      }
+    },
+    "Collecting data…" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбор данных…" } }
+      }
+    },
+    "Test failed" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тест не удался" } }
+      }
     }
   },
   "version" : "1.0"

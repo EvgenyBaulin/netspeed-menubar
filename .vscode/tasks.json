@@ -27,7 +27,7 @@
             "problemMatcher": []
         },
         {
-            "label": "bundle NetSpeedMac.app",
+            "label": "bundle NetSpeed.app",
             "type": "shell",
             "command": "zsh",
             "args": ["scripts/bundle.sh"],

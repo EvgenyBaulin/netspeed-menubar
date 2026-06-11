@@ -56,6 +56,39 @@ enum BarMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum SpeedTestInterval: Int, CaseIterable, Identifiable, Sendable {
+    case off = 0
+    case minutes15 = 15
+    case minutes30 = 30
+    case hour1 = 60
+    case hours3 = 180
+
+    var id: Int { rawValue }
+
+    var label: String {
+        switch self {
+        case .off: return L("Off")
+        case .minutes15: return L("Every 15 min")
+        case .minutes30: return L("Every 30 min")
+        case .hour1: return L("Every hour")
+        case .hours3: return L("Every 3 hours")
+        }
+    }
+}
+
+/// A ping target with a user-editable label.
+struct PingHost: Codable, Identifiable, Hashable, Sendable {
+    var id: UUID
+    var address: String
+    var label: String
+
+    init(id: UUID = UUID(), address: String, label: String = "") {
+        self.id = id
+        self.address = address
+        self.label = label
+    }
+}
+
 /// Persistent user preferences (UserDefaults-backed) plus launch-at-login
 /// state, which lives in SMAppService rather than defaults.
 @MainActor
@@ -64,11 +97,30 @@ final class AppSettings: ObservableObject {
         static let downloadUnit = "downloadUnit"
         static let uploadUnit = "uploadUnit"
         static let chartWindow = "chartWindowSeconds"
-        static let pingHosts = "pingHosts"
+        static let pingHostsLegacy = "pingHosts" // v2: [String]
+        static let pingHosts = "pingHostsV2" // v3+: [PingHost]
         static let barMode = "barMode"
+        static let speedTestInterval = "speedTestIntervalMinutes"
     }
 
     static let defaultPingHost = "1.1.1.1"
+
+    /// Well-known anycast resolvers — stable, geographically distributed
+    /// ping targets.
+    static func defaultHosts() -> [PingHost] {
+        [
+            PingHost(address: "1.1.1.1", label: "Cloudflare DNS"),
+            PingHost(address: "8.8.8.8", label: "Google DNS"),
+            PingHost(address: "9.9.9.9", label: "Quad9 DNS"),
+            PingHost(address: "208.67.222.222", label: "OpenDNS"),
+            PingHost(address: "94.140.14.14", label: "AdGuard DNS"),
+            PingHost(address: "77.88.8.8", label: "Yandex DNS"),
+            PingHost(address: "4.2.2.2", label: "Level 3 (Lumen)"),
+            PingHost(address: "64.6.64.6", label: "UltraDNS Public"),
+            PingHost(address: "185.228.168.9", label: "CleanBrowsing DNS"),
+            PingHost(address: "76.76.2.0", label: "Control D DNS"),
+        ]
+    }
 
     private let defaults = UserDefaults.standard
 
@@ -84,7 +136,10 @@ final class AppSettings: ObservableObject {
     @Published var barMode: BarMode {
         didSet { defaults.set(barMode.rawValue, forKey: Keys.barMode) }
     }
-    @Published var pingHosts: [String] {
+    @Published var speedTestInterval: SpeedTestInterval {
+        didSet { defaults.set(speedTestInterval.rawValue, forKey: Keys.speedTestInterval) }
+    }
+    @Published var pingHosts: [PingHost] {
         didSet {
             if let data = try? JSONEncoder().encode(pingHosts) {
                 defaults.set(data, forKey: Keys.pingHosts)
@@ -99,12 +154,27 @@ final class AppSettings: ObservableObject {
         uploadUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.uploadUnit) ?? "") ?? .auto
         chartWindow = ChartWindow(rawValue: defaults.integer(forKey: Keys.chartWindow)) ?? .fiveMinutes
         barMode = BarMode(rawValue: defaults.string(forKey: Keys.barMode) ?? "") ?? .full
+        speedTestInterval = SpeedTestInterval(rawValue: defaults.integer(forKey: Keys.speedTestInterval)) ?? .off
+
         if let data = defaults.data(forKey: Keys.pingHosts),
-           let hosts = try? JSONDecoder().decode([String].self, from: data),
+           let hosts = try? JSONDecoder().decode([PingHost].self, from: data),
            !hosts.isEmpty {
             pingHosts = hosts
         } else {
-            pingHosts = [Self.defaultPingHost]
+            // First run (or migration from the v2 plain-string list): seed the
+            // labeled defaults and keep any custom hosts the user had added.
+            var seeded = Self.defaultHosts()
+            if let legacy = defaults.data(forKey: Keys.pingHostsLegacy),
+               let addresses = try? JSONDecoder().decode([String].self, from: legacy) {
+                for address in addresses
+                where !seeded.contains(where: { $0.address == address }) {
+                    seeded.append(PingHost(address: address))
+                }
+            }
+            pingHosts = seeded
+            if let data = try? JSONEncoder().encode(seeded) {
+                defaults.set(data, forKey: Keys.pingHosts)
+            }
         }
         refreshLaunchAtLogin()
     }

@@ -18,14 +18,17 @@ final class AppTrafficMonitor: ObservableObject {
 
     @Published private(set) var entries: [Entry] = []
     @Published private(set) var available = true
+    @Published private(set) var collecting = false
 
     nonisolated static let interval: TimeInterval = 5
 
     private var timer: Timer?
+    private var quickTimer: Timer?
     private var previous: [String: (rx: UInt64, tx: UInt64)] = [:]
     private var previousTime: TimeInterval?
     private var sampling = false
     private var watchers = 0
+    private var quickRefreshPending = false
 
     /// Sampling runs only while at least one view is watching.
     func startWatching() {
@@ -36,6 +39,8 @@ final class AppTrafficMonitor: ObservableObject {
         }
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
+        collecting = true
+        quickRefreshPending = true
         sample()
     }
 
@@ -44,9 +49,13 @@ final class AppTrafficMonitor: ObservableObject {
         guard watchers == 0 else { return }
         timer?.invalidate()
         timer = nil
+        quickTimer?.invalidate()
+        quickTimer = nil
         previous = [:]
         previousTime = nil
         entries = []
+        collecting = false
+        quickRefreshPending = false
     }
 
     private func sample() {
@@ -73,19 +82,32 @@ final class AppTrafficMonitor: ObservableObject {
             previous = snapshot
             previousTime = now
         }
-        guard let previousTime, !previous.isEmpty else { return }
+        guard let previousTime, !previous.isEmpty else {
+            // Baseline established; refresh quickly once so the table isn't
+            // empty for a full interval after opening the section.
+            if quickRefreshPending {
+                quickRefreshPending = false
+                let quick = Timer(timeInterval: 1.5, repeats: false) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.sample() }
+                }
+                RunLoop.main.add(quick, forMode: .common)
+                quickTimer = quick
+            }
+            return
+        }
         let dt = max(now - previousTime, 0.5)
 
+        collecting = false
         entries = snapshot
             .compactMap { key, counts -> Entry? in
                 guard let before = previous[key] else { return nil } // new process: need 2 samples
-                let rx = counts.rx >= before.rx ? Double(counts.rx - before.rx) / dt : 0
-                let tx = counts.tx >= before.tx ? Double(counts.tx - before.tx) / dt : 0
-                guard rx >= 1 || tx >= 1 else { return nil }
+                let deltaRx = counts.rx >= before.rx ? counts.rx - before.rx : 0
+                let deltaTx = counts.tx >= before.tx ? counts.tx - before.tx : 0
+                guard deltaRx > 0 || deltaTx > 0 else { return nil }
                 let name = key.contains(".")
                     ? key.split(separator: ".").dropLast().joined(separator: ".")
                     : key
-                return Entry(id: key, name: name, rxRate: rx, txRate: tx)
+                return Entry(id: key, name: name, rxRate: Double(deltaRx) / dt, txRate: Double(deltaTx) / dt)
             }
             .sorted { $0.rxRate + $0.txRate > $1.rxRate + $1.txRate }
             .prefix(40)

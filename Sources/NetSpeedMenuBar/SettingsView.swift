@@ -5,6 +5,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
     @State private var newHost = ""
+    @State private var newLabel = ""
     @State private var hostError = false
 
     var body: some View {
@@ -53,13 +54,16 @@ struct SettingsView: View {
             }
 
             Section(L("Ping Hosts")) {
-                ForEach(settings.pingHosts, id: \.self) { host in
-                    HStack {
-                        Text(host)
-                            .monospacedDigit()
+                ForEach($settings.pingHosts) { $host in
+                    HStack(spacing: 8) {
+                        TextField(L("Label"), text: $host.label)
+                            .textFieldStyle(.plain)
                         Spacer()
+                        Text(host.address)
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
                         Button {
-                            settings.pingHosts.removeAll { $0 == host }
+                            settings.pingHosts.removeAll { $0.id == host.id }
                         } label: {
                             Image(systemName: "minus.circle.fill")
                                 .foregroundStyle(.secondary)
@@ -74,6 +78,8 @@ struct SettingsView: View {
                     TextField(L("IP or hostname"), text: $newHost)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit(addHost)
+                    TextField(L("Label"), text: $newLabel)
+                        .textFieldStyle(.roundedBorder)
                     Button(L("Add"), action: addHost)
                         .disabled(newHost.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -89,15 +95,18 @@ struct SettingsView: View {
     }
 
     private func addHost() {
-        let host = newHost.trimmingCharacters(in: .whitespaces)
-        guard AppSettings.isValidHost(host) else {
+        let address = newHost.trimmingCharacters(in: .whitespaces)
+        guard AppSettings.isValidHost(address) else {
             hostError = true
             return
         }
         hostError = false
-        if !settings.pingHosts.contains(host) {
-            settings.pingHosts.append(host)
+        if !settings.pingHosts.contains(where: { $0.address == address }) {
+            settings.pingHosts.append(
+                PingHost(address: address, label: newLabel.trimmingCharacters(in: .whitespaces))
+            )
         }
         newHost = ""
+        newLabel = ""
     }
 }

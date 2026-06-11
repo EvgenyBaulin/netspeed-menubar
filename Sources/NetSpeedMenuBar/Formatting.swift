@@ -52,6 +52,14 @@ enum PingFormatter {
     }
 }
 
+enum MbpsFormatter {
+    static func string(_ mbps: Double?) -> String {
+        guard let mbps, mbps.isFinite else { return "—" }
+        let digits = mbps < 100 ? 1 : 0
+        return "\(formatNumber(max(mbps, 0), fractionDigits: digits)) \(L("Mbit/s"))"
+    }
+}
+
 enum PercentFormatter {
     static func string(_ percent: Double) -> String {
         let digits: Int = percent > 0 && percent < 10 ? 1 : 0

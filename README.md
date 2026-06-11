@@ -4,7 +4,7 @@ Native macOS menu bar app (Swift / SwiftUI / AppKit hybrid) that shows live
 network stats right in the menu bar, with a click-to-open history panel built
 on Swift Charts and the Liquid Glass design language.
 
-![menu bar](docs/screenshot.png)
+![menu bar](images/screenshot.png)
 
 ## Features
 
@@ -14,10 +14,18 @@ on Swift Charts and the Liquid Glass design language.
 - **Stacked ↓/↑ speeds** — download on top, upload directly below, refreshed
   every second from kernel interface counters (`getifaddrs`), summed over all
   non-loopback interfaces.
-- **Ping latency** — averaged over a configurable list of hosts (default
-  `1.1.1.1`), pinged in parallel every 3 seconds; **jitter** and **packet
-  loss %** are shown under the Ping chart. Failed pings are gaps in the data,
-  never fake zero/negative points.
+- **Ping latency** — averaged over a configurable list of **labeled hosts**
+  (ten well-known anycast resolvers out of the box: Cloudflare, Google, Quad9,
+  OpenDNS, AdGuard, Yandex, Level 3, Verisign, CleanBrowsing, Control D),
+  pinged in parallel every 3 seconds; **jitter** and **packet loss %** are
+  shown under the Ping chart. Labels are editable inline in Settings. Failed
+  pings are gaps in the data, never fake zero/negative points.
+- **Speed test** — actual channel capacity (download/upload in Mbit/s),
+  measured by loading the connection via Cloudflare's public speed-test
+  endpoints: on demand from the panel or the Speed Test section, or
+  automatically on an interval (15 min … 3 h, off by default). The passive
+  menu-bar numbers show real current traffic — near zero when the machine is
+  idle is correct; capacity requires an active test.
 - **Click-to-open panel** — an `NSPopover` with three separate Swift Charts
   (Download, Upload, Ping): smoothed lines, gradient fills, auto-scaled Y axis,
   a time-based X axis, live 1-second updates while open. **Hover or drag** on
@@ -80,25 +88,34 @@ on Swift Charts and the Liquid Glass design language.
 
 ## Build a standalone app bundle
 
-To get a regular `NetSpeedMac.app` you can keep in `/Applications` and launch
+To get a regular `NetSpeed.app` you can keep in `/Applications` and launch
 from Spotlight:
 
 ```bash
 zsh scripts/bundle.sh
 ```
 
-This builds a release binary, assembles `dist/NetSpeedMac.app` (ad-hoc signed,
+This builds a release binary, assembles `dist/NetSpeed.app` (ad-hoc signed,
 `LSUIElement` — no Dock icon) including the SwiftPM resource bundle so
 localization works inside the app, and prints the resulting path. In VS Code it
-is also available as the **bundle NetSpeedMac.app** build task. Like `.build`,
+is also available as the **bundle NetSpeed.app** build task. Like `.build`,
 `dist` is a symlink to a folder outside iCloud — the script creates it
 automatically (iCloud's extended attributes would otherwise break strict
 code-signature verification).
 
 ```bash
-cp -R dist/NetSpeedMac.app /Applications/
-open /Applications/NetSpeedMac.app
+cp -R dist/NetSpeed.app /Applications/
+open /Applications/NetSpeed.app
 ```
+
+### The images/ folder
+
+- `images/icon.png` — the app icon source: a square **1024×1024 PNG with an
+  alpha channel** (transparent background). `scripts/bundle.sh` converts it
+  into `AppIcon.icns` (via `sips` + `iconutil`) automatically; without the
+  file the app builds with the generic icon.
+- `images/screenshot.png` — the menu-bar screenshot referenced at the top of
+  this README.
 
 ## Launch at Login
 
@@ -169,6 +186,11 @@ Sub-millisecond readings to internet hosts usually mean something local is
 answering ICMP — typically an active VPN/proxy intercepting traffic (a real
 internet round-trip cannot be ~0.5 ms). That is the system's genuine output,
 not a parsing error; check the VPN badge in the panel.
+
+The ↓/↑ numbers in the menu bar are **traffic actually flowing**, not channel
+capacity. On an idle machine they correctly drop to bytes per second. To see
+what the connection *can* do (what Speedtest-style sites report), use the
+built-in **Speed Test** — it loads the link on purpose and reports Mbit/s.
 
 ## Limitations
 

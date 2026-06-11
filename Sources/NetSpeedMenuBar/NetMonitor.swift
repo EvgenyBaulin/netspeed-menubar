@@ -77,7 +77,7 @@ final class NetMonitor: ObservableObject {
     private var speedSeq = 0
     private var pingSeq = 0
     private var pingInFlight = false
-    private var pingAttempts: [(sent: Int, ok: Int)] = []
+    private var pingCycles: [[(host: String, ok: Bool)]] = []
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -152,15 +152,16 @@ final class NetMonitor: ObservableObject {
 
     private func samplePing() {
         guard !pingInFlight else { return }
-        let hosts = settings.pingHosts.isEmpty ? [AppSettings.defaultPingHost] : settings.pingHosts
+        let addresses = settings.pingHosts.map(\.address)
+        let hosts = addresses.isEmpty ? [AppSettings.defaultPingHost] : addresses
         pingInFlight = true
         Task.detached(priority: .utility) { [weak self] in
             // All hosts in parallel; one slow host costs one cycle, not N.
-            let results = await withTaskGroup(of: Double?.self) { group in
+            let results = await withTaskGroup(of: (String, Double?).self) { group in
                 for host in hosts {
-                    group.addTask { Pinger.ping(host: host) }
+                    group.addTask { (host, await Pinger.ping(host: host)) }
                 }
-                var collected: [Double?] = []
+                var collected: [(String, Double?)] = []
                 for await result in group { collected.append(result) }
                 return collected
             }
@@ -168,17 +169,15 @@ final class NetMonitor: ObservableObject {
         }
     }
 
-    private func finishPing(_ results: [Double?]) {
+    private func finishPing(_ results: [(String, Double?)]) {
         pingInFlight = false
 
-        let successes = results.compactMap(\.self)
-        pingAttempts.append((sent: results.count, ok: successes.count))
-        if pingAttempts.count > pingStatsWindow {
-            pingAttempts.removeFirst(pingAttempts.count - pingStatsWindow)
+        let successes = results.compactMap(\.1)
+        pingCycles.append(results.map { (host: $0.0, ok: $0.1 != nil) })
+        if pingCycles.count > pingStatsWindow {
+            pingCycles.removeFirst(pingCycles.count - pingStatsWindow)
         }
-        let sent = pingAttempts.reduce(0) { $0 + $1.sent }
-        let ok = pingAttempts.reduce(0) { $0 + $1.ok }
-        packetLoss = sent > 0 ? 100 * Double(sent - ok) / Double(sent) : 0
+        recomputePacketLoss()
 
         guard !successes.isEmpty else {
             // Failed cycle = a gap in the data: no sample, no sentinel value.
@@ -197,6 +196,29 @@ final class NetMonitor: ObservableObject {
             jitter = diffs.reduce(0, +) / Double(diffs.count)
         } else {
             jitter = nil
+        }
+    }
+
+    /// Loss is computed only over hosts that answered at least once in the
+    /// stats window — a host that is down (or doesn't answer ICMP at all)
+    /// would otherwise read as permanent fake loss. All hosts silent → 100%.
+    private func recomputePacketLoss() {
+        var perHost: [String: (sent: Int, ok: Int)] = [:]
+        for cycle in pingCycles {
+            for sample in cycle {
+                perHost[sample.host, default: (0, 0)].sent += 1
+                if sample.ok {
+                    perHost[sample.host, default: (0, 0)].ok += 1
+                }
+            }
+        }
+        let reachable = perHost.values.filter { $0.ok > 0 }
+        if reachable.isEmpty {
+            packetLoss = perHost.isEmpty ? 0 : 100
+        } else {
+            let sent = reachable.reduce(0) { $0 + $1.sent }
+            let ok = reachable.reduce(0) { $0 + $1.ok }
+            packetLoss = sent > 0 ? 100 * Double(sent - ok) / Double(sent) : 0
         }
     }
 

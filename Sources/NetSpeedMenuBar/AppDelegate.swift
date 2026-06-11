@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings()
     private lazy var monitor = NetMonitor(settings: settings)
     private let appTraffic = AppTrafficMonitor()
+    private let speedTester = SpeedTester()
     private let windowState = WindowState()
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
@@ -20,12 +21,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         monitor.start()
+        speedTester.monitor = monitor
+        speedTester.applyAutoInterval(settings.speedTestInterval)
         setUpStatusItem()
         setUpPopover()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         monitor.stop()
+        speedTester.stopAuto()
         if let statusItem {
             NSStatusBar.system.removeStatusItem(statusItem)
         }
@@ -64,6 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             rootView: PopoverView(
                 monitor: monitor,
                 settings: settings,
+                speedTester: speedTester,
                 onOpenSettings: { [weak self] in self?.openAppWindow(at: .settings) },
                 onOpenDetails: { [weak self] in self?.openAppWindow(at: .network) }
             )
@@ -164,7 +169,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 monitor: monitor,
                 settings: settings,
                 state: windowState,
-                appTraffic: appTraffic
+                appTraffic: appTraffic,
+                speedTester: speedTester
             )
         )
         let window = NSWindow(contentViewController: hosting)

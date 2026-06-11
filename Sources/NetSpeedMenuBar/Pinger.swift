@@ -2,13 +2,22 @@ import Foundation
 
 enum Pinger {
     /// Pings `host` once and returns the round-trip time in milliseconds, or
-    /// `nil` on timeout/error. Blocking — call off the main thread.
-    ///
+    /// `nil` on timeout/error. The blocking subprocess wait runs on a GCD
+    /// global queue (which overcommits) so concurrent pings never starve the
+    /// Swift cooperative thread pool.
+    static func ping(host: String) async -> Double? {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async {
+                continuation.resume(returning: pingBlocking(host: host))
+            }
+        }
+    }
+
     /// IPv4 targets use `/sbin/ping -c 1 -t 2`; IPv6 literals go to
     /// `/sbin/ping6`, which has no overall-deadline flag (its `-t` is an
     /// ICMPv6 node-information query), so the deadline is enforced by
     /// terminating the process externally.
-    static func ping(host: String) -> Double? {
+    private static func pingBlocking(host: String) -> Double? {
         let isIPv6 = host.contains(":")
         let process = Process()
         process.executableURL = URL(fileURLWithPath: isIPv6 ? "/sbin/ping6" : "/sbin/ping")

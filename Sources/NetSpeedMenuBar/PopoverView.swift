@@ -7,6 +7,7 @@ import SwiftUI
 struct PopoverView: View {
     @ObservedObject var monitor: NetMonitor
     @ObservedObject var settings: AppSettings
+    @ObservedObject var speedTester: SpeedTester
     let onOpenSettings: () -> Void
     let onOpenDetails: () -> Void
 
@@ -58,9 +59,51 @@ struct PopoverView: View {
                 tint: .orange,
                 axisLabel: { PingFormatter.string($0) }
             )
+
+            speedTestRow
         }
         .padding(12)
         .frame(width: 340)
+    }
+
+    private var speedTestRow: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "speedometer")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if speedTester.isRunning {
+                ProgressView()
+                    .controlSize(.small)
+                Text(L("Testing…"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else if let result = speedTester.lastResult {
+                Text("↓ \(MbpsFormatter.string(result.downloadMbps))   ↑ \(MbpsFormatter.string(result.uploadMbps))")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                Text(result.date.formatted(date: .omitted, time: .shortened))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else {
+                Text(L("Speed Test"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                speedTester.run()
+            } label: {
+                Image(systemName: "play.circle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .disabled(speedTester.isRunning)
+            .help(L("Run Test"))
+            .accessibilityLabel(L("Run Test"))
+        }
+        .padding(.horizontal, 2)
     }
 
     private var pingSubtitle: String {

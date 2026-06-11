@@ -3,6 +3,7 @@ import SwiftUI
 
 enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case network
+    case speedTest
     case apps
     case usage
     case log
@@ -13,6 +14,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .network: return L("Network")
+        case .speedTest: return L("Speed Test")
         case .apps: return L("Apps")
         case .usage: return L("Usage")
         case .log: return L("Log")
@@ -23,6 +25,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var symbolName: String {
         switch self {
         case .network: return "network"
+        case .speedTest: return "speedometer"
         case .apps: return "app.badge"
         case .usage: return "arrow.up.arrow.down"
         case .log: return "list.bullet.rectangle"
@@ -43,6 +46,7 @@ struct AppWindowView: View {
     @ObservedObject var settings: AppSettings
     @ObservedObject var state: WindowState
     @ObservedObject var appTraffic: AppTrafficMonitor
+    @ObservedObject var speedTester: SpeedTester
 
     var body: some View {
         NavigationSplitView {
@@ -55,6 +59,8 @@ struct AppWindowView: View {
             switch state.section ?? .network {
             case .network:
                 NetworkSectionView(monitor: monitor, settings: settings)
+            case .speedTest:
+                SpeedTestSectionView(tester: speedTester, settings: settings)
             case .apps:
                 AppsSectionView(appTraffic: appTraffic)
             case .usage:
@@ -66,6 +72,80 @@ struct AppWindowView: View {
             }
         }
         .frame(minWidth: 640, minHeight: 440)
+    }
+}
+
+// MARK: - Speed Test
+
+/// Active channel-capacity measurement. The passive monitor shows actual
+/// traffic; available bandwidth requires loading the connection.
+struct SpeedTestSectionView: View {
+    @ObservedObject var tester: SpeedTester
+    @ObservedObject var settings: AppSettings
+
+    var body: some View {
+        Form {
+            Section(L("Last test")) {
+                if let result = tester.lastResult {
+                    LabeledContent(L("Download")) {
+                        Text(MbpsFormatter.string(result.downloadMbps))
+                            .monospacedDigit()
+                    }
+                    LabeledContent(L("Upload")) {
+                        Text(MbpsFormatter.string(result.uploadMbps))
+                            .monospacedDigit()
+                    }
+                    LabeledContent(L("Ping")) {
+                        Text(PingFormatter.string(result.pingMs))
+                            .monospacedDigit()
+                    }
+                    Text(result.date.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(L("No data yet"))
+                        .foregroundStyle(.secondary)
+                }
+                if tester.lastFailed {
+                    Text(L("Test failed"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Section {
+                Button {
+                    tester.run()
+                } label: {
+                    if tester.isRunning {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(L("Testing…"))
+                        }
+                    } else {
+                        Text(L("Run Test"))
+                    }
+                }
+                .disabled(tester.isRunning)
+
+                Picker(L("Auto test"), selection: $settings.speedTestInterval) {
+                    ForEach(SpeedTestInterval.allCases) { interval in
+                        Text(interval.label).tag(interval)
+                    }
+                }
+                Text(L("Each test transfers tens of megabytes of data."))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                Text(L("The menu bar shows actual current traffic; channel capacity is measured by loading the connection, like any speed test."))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .formStyle(.grouped)
+        .onChange(of: settings.speedTestInterval) {
+            tester.applyAutoInterval(settings.speedTestInterval)
+        }
     }
 }
 
@@ -211,9 +291,19 @@ struct AppsSectionView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } else if appTraffic.entries.isEmpty {
-                    Text(L("No data yet"))
+                    if appTraffic.collecting {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(L("Collecting data…"))
+                        }
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                    } else {
+                        Text(L("No data yet"))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
