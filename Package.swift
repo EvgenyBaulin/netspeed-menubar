@@ -3,13 +3,17 @@ import PackageDescription
 
 let package = Package(
     name: "NetSpeedMenuBar",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v26)
     ],
     targets: [
         .executableTarget(
             name: "NetSpeedMenuBar",
-            path: "Sources/NetSpeedMenuBar"
+            path: "Sources/NetSpeedMenuBar",
+            resources: [
+                .process("Resources")
+            ]
         )
     ]
 )

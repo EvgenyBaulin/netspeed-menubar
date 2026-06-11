@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>1 hour</key>
+	<string>1 час</string>
+	<key>1 min</key>
+	<string>1 мин</string>
+	<key>15 min</key>
+	<string>15 мин</string>
+	<key>5 min</key>
+	<string>5 мин</string>
+	<key>Add</key>
+	<string>Добавить</string>
+	<key>Apps</key>
+	<string>Приложения</string>
+	<key>Auto</key>
+	<string>Авто</string>
+	<key>B/s</key>
+	<string>Б/с</string>
+	<key>Charts</key>
+	<string>Графики</string>
+	<key>Compact</key>
+	<string>Компактный</string>
+	<key>Connection lost</key>
+	<string>Связь потеряна</string>
+	<key>Couldn't change Launch at Login</key>
+	<string>Не удалось изменить запуск при входе</string>
+	<key>Details…</key>
+	<string>Подробнее…</string>
+	<key>Download</key>
+	<string>Загрузка</string>
+	<key>Download Unit</key>
+	<string>Единица загрузки</string>
+	<key>Duration</key>
+	<string>Длительность</string>
+	<key>Ethernet</key>
+	<string>Ethernet</string>
+	<key>Full</key>
+	<string>Полный</string>
+	<key>GB/s</key>
+	<string>ГБ/с</string>
+	<key>General</key>
+	<string>Основные</string>
+	<key>IP or hostname</key>
+	<string>IP или имя хоста</string>
+	<key>Icon Only</key>
+	<string>Только значок</string>
+	<key>Invalid host name</key>
+	<string>Неверный адрес хоста</string>
+	<key>Jitter</key>
+	<string>Джиттер</string>
+	<key>KB/s</key>
+	<string>КБ/с</string>
+	<key>Kbit/s</key>
+	<string>Кбит/с</string>
+	<key>Launch at Login</key>
+	<string>Запуск при входе</string>
+	<key>Log</key>
+	<string>Журнал</string>
+	<key>Loss</key>
+	<string>Потери</string>
+	<key>MB/s</key>
+	<string>МБ/с</string>
+	<key>Mbit/s</key>
+	<string>Мбит/с</string>
+	<key>Menu Bar Style</key>
+	<string>Вид строки меню</string>
+	<key>Network</key>
+	<string>Сеть</string>
+	<key>No data yet</key>
+	<string>Пока нет данных</string>
+	<key>No events</key>
+	<string>Нет событий</string>
+	<key>Not active</key>
+	<string>Не активен</string>
+	<key>Offline</key>
+	<string>Не в сети</string>
+	<key>Per-app traffic is an approximation based on nettop; some system traffic may be unattributed.</key>
+	<string>Трафик по приложениям — приближение на основе nettop; часть системного трафика может не учитываться.</string>
+	<key>Personal Hotspot</key>
+	<string>Режим модема</string>
+	<key>Physical Connection</key>
+	<string>Физическое подключение</string>
+	<key>Ping</key>
+	<string>Пинг</string>
+	<key>Ping Hosts</key>
+	<string>Хосты пинга</string>
+	<key>Process</key>
+	<string>Процесс</string>
+	<key>Quit</key>
+	<string>Выход</string>
+	<key>Quit NetSpeed</key>
+	<string>Завершить NetSpeed</string>
+	<key>Received</key>
+	<string>Скачано</string>
+	<key>Remove</key>
+	<string>Удалить</string>
+	<key>Requires the installed app bundle (see README).</key>
+	<string>Требуется установленное приложение (.app, см. README).</string>
+	<key>Reset</key>
+	<string>Сбросить</string>
+	<key>Sent</key>
+	<string>Отдано</string>
+	<key>Session</key>
+	<string>Сессия</string>
+	<key>Settings</key>
+	<string>Настройки</string>
+	<key>Settings…</key>
+	<string>Настройки…</string>
+	<key>This Month</key>
+	<string>Этот месяц</string>
+	<key>Time Window</key>
+	<string>Окно времени</string>
+	<key>Today</key>
+	<string>Сегодня</string>
+	<key>Upload</key>
+	<string>Отдача</string>
+	<key>Upload Unit</key>
+	<string>Единица отдачи</string>
+	<key>Usage</key>
+	<string>Трафик</string>
+	<key>VPN</key>
+	<string>VPN</string>
+	<key>VPN Active</key>
+	<string>VPN активен</string>
+	<key>VPN Tunnel</key>
+	<string>VPN-туннель</string>
+	<key>Wi-Fi</key>
+	<string>Wi-Fi</string>
+	<key>ms</key>
+	<string>мс</string>
+	<key>ongoing</key>
+	<string>продолжается</string>
+</dict>
+</plist>

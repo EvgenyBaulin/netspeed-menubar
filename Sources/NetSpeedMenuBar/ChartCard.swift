@@ -2,24 +2,43 @@ import Charts
 import SwiftUI
 
 /// One titled chart on a Liquid Glass material card: header with the current
-/// value, a smoothed line over history, and a soft gradient fill underneath.
+/// value (and optional subtitle), a smoothed line over history with a soft
+/// gradient fill, time-based X axis covering the selected window, and real
+/// gaps where measurements are missing.
 struct ChartCard: View {
     let title: String
     let valueText: String
-    let samples: [Sample]
+    var subtitle: String?
+    let segments: [ChartSegment]
+    let xDomain: ClosedRange<Date>
     let tint: Color
     let axisLabel: (Double) -> String
 
     private var yMax: Double {
-        ChartScale.niceMax(samples.map(\.value).max() ?? 0)
+        ChartScale.niceMax(segments.flatMap(\.samples).map(\.value).max() ?? 0)
+    }
+
+    private var xAxisFormat: Date.FormatStyle {
+        let window = xDomain.upperBound.timeIntervalSince(xDomain.lowerBound)
+        return window <= 120
+            ? .dateTime.minute().second()
+            : .dateTime.hour().minute()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.caption2)
+                            .monospacedDigit()
+                            .foregroundStyle(.tertiary)
+                    }
+                }
                 Spacer()
                 Text(valueText)
                     .font(.callout.weight(.semibold))
@@ -27,29 +46,45 @@ struct ChartCard: View {
                     .foregroundStyle(.primary)
             }
 
-            Chart(samples) { sample in
-                AreaMark(
-                    x: .value("Time", sample.id),
-                    y: .value(title, sample.value)
-                )
-                .interpolationMethod(.monotone)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [tint.opacity(0.25), tint.opacity(0.02)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+            Chart {
+                ForEach(segments) { segment in
+                    ForEach(segment.samples) { sample in
+                        AreaMark(
+                            x: .value("Time", sample.time),
+                            y: .value(title, sample.value),
+                            series: .value("Segment", segment.id),
+                            stacking: .unstacked
+                        )
+                        .interpolationMethod(.monotone)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [tint.opacity(0.25), tint.opacity(0.02)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
 
-                LineMark(
-                    x: .value("Time", sample.id),
-                    y: .value(title, sample.value)
-                )
-                .interpolationMethod(.monotone)
-                .foregroundStyle(tint)
-                .lineStyle(StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                        LineMark(
+                            x: .value("Time", sample.time),
+                            y: .value(title, sample.value),
+                            series: .value("Segment", segment.id)
+                        )
+                        .interpolationMethod(.monotone)
+                        .foregroundStyle(tint)
+                        .lineStyle(StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                    }
+                }
             }
-            .chartXAxis(.hidden)
+            .chartXScale(domain: xDomain)
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 3)) { _ in
+                    AxisGridLine()
+                        .foregroundStyle(.quaternary)
+                    AxisValueLabel(format: xAxisFormat)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
             .chartYAxis {
                 AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { value in
                     AxisGridLine()

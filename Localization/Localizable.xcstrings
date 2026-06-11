@@ -1,0 +1,331 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Download" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Загрузка" } }
+      }
+    },
+    "Upload" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отдача" } }
+      }
+    },
+    "Ping" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Пинг" } }
+      }
+    },
+    "Wi-Fi" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Wi-Fi" } }
+      }
+    },
+    "Personal Hotspot" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Режим модема" } }
+      }
+    },
+    "Ethernet" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ethernet" } }
+      }
+    },
+    "Offline" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не в сети" } }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выход" } }
+      }
+    },
+    "Quit NetSpeed" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Завершить NetSpeed" } }
+      }
+    },
+    "Settings…" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки…" } }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки" } }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Основные" } }
+      }
+    },
+    "Charts" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Графики" } }
+      }
+    },
+    "Launch at Login" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Запуск при входе" } }
+      }
+    },
+    "Requires the installed app bundle (see README)." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Требуется установленное приложение (.app, см. README)." } }
+      }
+    },
+    "Couldn't change Launch at Login" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось изменить запуск при входе" } }
+      }
+    },
+    "Time Window" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Окно времени" } }
+      }
+    },
+    "1 min" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "1 мин" } }
+      }
+    },
+    "5 min" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "5 мин" } }
+      }
+    },
+    "15 min" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "15 мин" } }
+      }
+    },
+    "1 hour" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "1 час" } }
+      }
+    },
+    "Download Unit" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Единица загрузки" } }
+      }
+    },
+    "Upload Unit" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Единица отдачи" } }
+      }
+    },
+    "Auto" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Авто" } }
+      }
+    },
+    "B/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Б/с" } }
+      }
+    },
+    "KB/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "КБ/с" } }
+      }
+    },
+    "MB/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "МБ/с" } }
+      }
+    },
+    "GB/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "ГБ/с" } }
+      }
+    },
+    "Kbit/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Кбит/с" } }
+      }
+    },
+    "Mbit/s" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мбит/с" } }
+      }
+    },
+    "ms" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "мс" } }
+      }
+    },
+    "Ping Hosts" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Хосты пинга" } }
+      }
+    },
+    "IP or hostname" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "IP или имя хоста" } }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Добавить" } }
+      }
+    },
+    "Invalid host name" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неверный адрес хоста" } }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить" } }
+      }
+    },
+    "Jitter" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Джиттер" } }
+      }
+    },
+    "Loss" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Потери" } }
+      }
+    },
+    "Menu Bar Style" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вид строки меню" } }
+      }
+    },
+    "Full" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Полный" } }
+      }
+    },
+    "Compact" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Компактный" } }
+      }
+    },
+    "Icon Only" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Только значок" } }
+      }
+    },
+    "Details…" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подробнее…" } }
+      }
+    },
+    "Network" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сеть" } }
+      }
+    },
+    "Apps" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приложения" } }
+      }
+    },
+    "Usage" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Трафик" } }
+      }
+    },
+    "Log" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Журнал" } }
+      }
+    },
+    "VPN" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "VPN" } }
+      }
+    },
+    "VPN Active" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "VPN активен" } }
+      }
+    },
+    "VPN Tunnel" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "VPN-туннель" } }
+      }
+    },
+    "Physical Connection" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Физическое подключение" } }
+      }
+    },
+    "Not active" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не активен" } }
+      }
+    },
+    "Session" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сессия" } }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сегодня" } }
+      }
+    },
+    "This Month" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Этот месяц" } }
+      }
+    },
+    "Reset" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить" } }
+      }
+    },
+    "Received" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скачано" } }
+      }
+    },
+    "Sent" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отдано" } }
+      }
+    },
+    "Process" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Процесс" } }
+      }
+    },
+    "No data yet" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Пока нет данных" } }
+      }
+    },
+    "No events" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет событий" } }
+      }
+    },
+    "Connection lost" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Связь потеряна" } }
+      }
+    },
+    "Duration" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Длительность" } }
+      }
+    },
+    "ongoing" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "продолжается" } }
+      }
+    },
+    "Per-app traffic is an approximation based on nettop; some system traffic may be unattributed." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Трафик по приложениям — приближение на основе nettop; часть системного трафика может не учитываться." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

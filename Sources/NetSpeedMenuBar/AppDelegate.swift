@@ -9,9 +9,11 @@ final class PassthroughHostingView<Content: View>: NSHostingView<Content> {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let monitor = NetMonitor()
+    private let settings = AppSettings()
+    private lazy var monitor = NetMonitor(settings: settings)
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
+    private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -54,7 +56,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setUpPopover() {
         let popover = NSPopover()
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: PopoverView(monitor: monitor))
+        popover.contentViewController = NSHostingController(
+            rootView: PopoverView(monitor: monitor, settings: settings) { [weak self] in
+                self?.openSettings()
+            }
+        )
         self.popover = popover
     }
 
@@ -94,8 +100,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showContextMenu() {
         guard let statusItem else { return }
         let menu = NSMenu()
+
+        let settingsItem = NSMenuItem(
+            title: L("Settings…"),
+            action: #selector(openSettingsFromMenu),
+            keyEquivalent: ","
+        )
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+
+        menu.addItem(.separator())
+
         let quit = NSMenuItem(
-            title: "Quit NetSpeed",
+            title: L("Quit NetSpeed"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -107,5 +124,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
         statusItem.button?.performClick(nil)
         statusItem.menu = nil
+    }
+
+    @objc private func openSettingsFromMenu() {
+        openSettings()
+    }
+
+    // MARK: - Settings window
+
+    func openSettings() {
+        popover?.performClose(nil)
+        if let window = settingsWindow {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate()
+            return
+        }
+        let hosting = NSHostingController(rootView: SettingsView(settings: settings))
+        let window = NSWindow(contentViewController: hosting)
+        window.title = L("Settings")
+        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.isReleasedWhenClosed = false
+        window.center()
+        settingsWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate()
     }
 }

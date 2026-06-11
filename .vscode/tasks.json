@@ -27,10 +27,10 @@
             "problemMatcher": []
         },
         {
-            "label": "make NetSpeedMac.app",
+            "label": "bundle NetSpeedMac.app",
             "type": "shell",
             "command": "zsh",
-            "args": ["scripts/make-app.sh"],
+            "args": ["scripts/bundle.sh"],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
