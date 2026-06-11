@@ -393,7 +393,7 @@
     },
     "The menu bar shows actual current traffic; channel capacity is measured by loading the connection, like any speed test." : {
       "localizations" : {
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "В строке меню — фактический текущий трафик; ёмкость канала измеряется нагрузкой на соединение, как в любом спидтесте." } }
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "В строке меню — фактический текущий трафик; скорость канала измеряется нагрузкой на соединение, как в любом спидтесте." } }
       }
     },
     "Collecting data…" : {
@@ -404,6 +404,36 @@
     "Test failed" : {
       "localizations" : {
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тест не удался" } }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Язык" } }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Системный" } }
+      }
+    },
+    "Menu Bar Shows" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "В строке меню" } }
+      }
+    },
+    "Current traffic" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Текущий трафик" } }
+      }
+    },
+    "Channel capacity (speed test)" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скорость канала (спидтест)" } }
+      }
+    },
+    "Capacity values come from the periodic speed test." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скорость канала обновляется периодическим спидтестом." } }
       }
     }
   },

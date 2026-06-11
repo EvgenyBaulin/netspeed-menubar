@@ -51,9 +51,14 @@ on Swift Charts and the Liquid Glass design language.
     shared by all three charts; long windows are downsampled for smooth
     rendering.
   - All settings persist across launches.
-- **Localized UI (EN / RU)** — follows the system language, including chart
-  titles, connection types, units, and settings labels. Numbers use
-  locale-aware formatting (decimal comma in Russian).
+- **Localized UI (EN / RU)** — follows the system language by default, with a
+  **language picker** in Settings (System / English / Русский) that switches
+  the UI live. Numbers use locale-aware formatting (decimal comma in Russian).
+- **Menu bar content choice** — the bar can show either **current traffic**
+  (default) or **channel capacity** from the latest speed test; selecting
+  capacity automatically enables the periodic auto test (every 30 min unless
+  configured otherwise), so the link is only loaded for ~16 s per interval —
+  the network stays usable in between.
 - **Liquid Glass UI** — system materials (`.regularMaterial`) and semantic
   colors only; no hard-coded colors or transparency, so the app automatically
   respects Reduce Transparency and picks up future Liquid Glass refinements.
@@ -113,7 +118,9 @@ open /Applications/NetSpeed.app
 - `images/icon.png` — the app icon source: a square **1024×1024 PNG with an
   alpha channel** (transparent background). `scripts/bundle.sh` converts it
   into `AppIcon.icns` (via `sips` + `iconutil`) automatically; without the
-  file the app builds with the generic icon.
+  file the app builds with the generic icon. A default icon is committed —
+  replace the PNG with your own art, or regenerate the default with
+  `xcrun swiftc scripts/make-icon.swift -o /tmp/make-icon && /tmp/make-icon`.
 - `images/screenshot.png` — the menu-bar screenshot referenced at the top of
   this README.
 

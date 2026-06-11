@@ -45,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let button = item.button else { return }
 
         let hosting = PassthroughHostingView(
-            rootView: StatusItemView(monitor: monitor, settings: settings)
+            rootView: StatusItemView(monitor: monitor, settings: settings, speedTester: speedTester)
         )
         hosting.translatesAutoresizingMaskIntoConstraints = false
         button.addSubview(hosting)

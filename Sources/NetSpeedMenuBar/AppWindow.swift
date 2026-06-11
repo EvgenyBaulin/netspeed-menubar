@@ -68,7 +68,7 @@ struct AppWindowView: View {
             case .log:
                 LogSectionView(log: monitor.connectivityLog)
             case .settings:
-                SettingsView(settings: settings)
+                SettingsView(settings: settings, speedTester: speedTester)
             }
         }
         .frame(minWidth: 640, minHeight: 440)

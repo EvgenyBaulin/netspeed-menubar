@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// Menu-bar label with three user-selectable layouts:
-/// Full — connection icon, stacked ↓/↑ speeds, ping centered between them;
-/// Compact — icon plus one line of ↓/↑;
-/// Icon only — just the connection icon.
+/// Menu-bar label with three user-selectable layouts (Full / Compact /
+/// Icon only) and two content sources: live traffic (passive counters) or
+/// channel capacity (latest periodic speed-test result). Ping is always the
+/// live measurement.
 struct StatusItemView: View {
     @ObservedObject var monitor: NetMonitor
     @ObservedObject var settings: AppSettings
+    @ObservedObject var speedTester: SpeedTester
 
     var body: some View {
         HStack(spacing: 5) {
@@ -19,8 +20,8 @@ struct StatusItemView: View {
             switch settings.barMode {
             case .full:
                 VStack(alignment: .leading, spacing: 0) {
-                    speedLine(arrow: "↓", bytesPerSecond: monitor.downSpeed, size: 9)
-                    speedLine(arrow: "↑", bytesPerSecond: monitor.upSpeed, size: 9)
+                    line(arrow: "↓", text: downText, size: 9)
+                    line(arrow: "↑", text: upText, size: 9)
                 }
                 .frame(minWidth: 58, alignment: .leading)
 
@@ -30,8 +31,8 @@ struct StatusItemView: View {
                     .foregroundStyle(.secondary)
             case .compact:
                 HStack(spacing: 6) {
-                    speedLine(arrow: "↓", bytesPerSecond: monitor.downSpeed, size: 11)
-                    speedLine(arrow: "↑", bytesPerSecond: monitor.upSpeed, size: 11)
+                    line(arrow: "↓", text: downText, size: 11)
+                    line(arrow: "↑", text: upText, size: 11)
                 }
             case .iconOnly:
                 EmptyView()
@@ -41,8 +42,26 @@ struct StatusItemView: View {
         .fixedSize()
     }
 
-    private func speedLine(arrow: String, bytesPerSecond: Double, size: CGFloat) -> some View {
-        Text("\(arrow) \(ByteRateFormatter.string(bytesPerSecond))")
+    private var downText: String {
+        switch settings.barContent {
+        case .traffic:
+            return ByteRateFormatter.string(monitor.downSpeed)
+        case .capacity:
+            return MbpsFormatter.string(speedTester.lastResult?.downloadMbps)
+        }
+    }
+
+    private var upText: String {
+        switch settings.barContent {
+        case .traffic:
+            return ByteRateFormatter.string(monitor.upSpeed)
+        case .capacity:
+            return MbpsFormatter.string(speedTester.lastResult?.uploadMbps)
+        }
+    }
+
+    private func line(arrow: String, text: String, size: CGFloat) -> some View {
+        Text("\(arrow) \(text)")
             .font(.system(size: size, weight: .medium))
             .monospacedDigit()
             .foregroundStyle(.primary)

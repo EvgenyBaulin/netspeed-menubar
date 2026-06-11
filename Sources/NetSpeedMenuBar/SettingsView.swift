@@ -4,6 +4,7 @@ import SwiftUI
 /// units), Ping (editable host list with validation).
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
+    @ObservedObject var speedTester: SpeedTester
     @State private var newHost = ""
     @State private var newLabel = ""
     @State private var hostError = false
@@ -18,20 +19,35 @@ struct SettingsView: View {
                         set: { settings.setLaunchAtLogin($0) }
                     )
                 )
-                if let error = settings.launchAtLoginError {
-                    Text(error)
+                if let detail = settings.launchAtLoginErrorDetail {
+                    Text("\(L("Couldn't change Launch at Login")): \(detail)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 Text(L("Requires the installed app bundle (see README)."))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+                Picker(L("Language"), selection: $settings.language) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.label).tag(language)
+                    }
+                }
                 Picker(L("Menu Bar Style"), selection: $settings.barMode) {
                     ForEach(BarMode.allCases) { mode in
                         Text(mode.label).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
+                Picker(L("Menu Bar Shows"), selection: $settings.barContent) {
+                    ForEach(BarContent.allCases) { content in
+                        Text(content.label).tag(content)
+                    }
+                }
+                if settings.barContent == .capacity {
+                    Text(L("Capacity values come from the periodic speed test."))
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
             }
 
             Section(L("Charts")) {
@@ -92,6 +108,24 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .onAppear { settings.refreshLaunchAtLogin() }
+        .onChange(of: settings.barContent) {
+            // Capacity mode is only meaningful with fresh measurements:
+            // ensure the auto test is on and produce a first value promptly.
+            guard settings.barContent == .capacity else { return }
+            if settings.speedTestInterval == .off {
+                settings.speedTestInterval = .minutes30
+                speedTester.applyAutoInterval(.minutes30)
+            }
+            // A persisted result can be days old (and from another network);
+            // refresh unless it is younger than the auto-test interval.
+            let maxAge = TimeInterval(settings.speedTestInterval.rawValue * 60)
+            let isFresh = speedTester.lastResult.map {
+                Date().timeIntervalSince($0.date) <= maxAge
+            } ?? false
+            if !isFresh {
+                speedTester.run()
+            }
+        }
     }
 
     private func addHost() {

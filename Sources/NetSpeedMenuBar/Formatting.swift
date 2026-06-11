@@ -1,7 +1,11 @@
 import Foundation
 
 private func formatNumber(_ value: Double, fractionDigits: Int) -> String {
-    value.formatted(.number.precision(.fractionLength(fractionDigits)))
+    value.formatted(
+        .number
+            .precision(.fractionLength(fractionDigits))
+            .locale(LocalizationState.shared.locale)
+    )
 }
 
 enum ByteRateFormatter {
@@ -64,7 +68,11 @@ enum PercentFormatter {
     static func string(_ percent: Double) -> String {
         let digits: Int = percent > 0 && percent < 10 ? 1 : 0
         // CLDR places the percent sign per locale ("12.5%" en, "12,5 %" ru).
-        return (percent / 100).formatted(.percent.precision(.fractionLength(digits)))
+        return (percent / 100).formatted(
+            .percent
+                .precision(.fractionLength(digits))
+                .locale(LocalizationState.shared.locale)
+        )
     }
 }
 

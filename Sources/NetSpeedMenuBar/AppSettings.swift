@@ -76,6 +76,20 @@ enum SpeedTestInterval: Int, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum BarContent: String, CaseIterable, Identifiable, Sendable {
+    case traffic
+    case capacity
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .traffic: return L("Current traffic")
+        case .capacity: return L("Channel capacity (speed test)")
+        }
+    }
+}
+
 /// A ping target with a user-editable label.
 struct PingHost: Codable, Identifiable, Hashable, Sendable {
     var id: UUID
@@ -100,7 +114,9 @@ final class AppSettings: ObservableObject {
         static let pingHostsLegacy = "pingHosts" // v2: [String]
         static let pingHosts = "pingHostsV2" // v3+: [PingHost]
         static let barMode = "barMode"
+        static let barContent = "barContent"
         static let speedTestInterval = "speedTestIntervalMinutes"
+        static let language = "appLanguage"
     }
 
     static let defaultPingHost = "1.1.1.1"
@@ -136,6 +152,15 @@ final class AppSettings: ObservableObject {
     @Published var barMode: BarMode {
         didSet { defaults.set(barMode.rawValue, forKey: Keys.barMode) }
     }
+    @Published var barContent: BarContent {
+        didSet { defaults.set(barContent.rawValue, forKey: Keys.barContent) }
+    }
+    @Published var language: AppLanguage {
+        didSet {
+            defaults.set(language.rawValue, forKey: Keys.language)
+            LocalizationState.shared.language = language
+        }
+    }
     @Published var speedTestInterval: SpeedTestInterval {
         didSet { defaults.set(speedTestInterval.rawValue, forKey: Keys.speedTestInterval) }
     }
@@ -147,14 +172,20 @@ final class AppSettings: ObservableObject {
         }
     }
     @Published private(set) var launchAtLogin = false
-    @Published private(set) var launchAtLoginError: String?
+    // Only the OS-provided detail is stored; the localized prefix is built at
+    // render time so it follows live language switches.
+    @Published private(set) var launchAtLoginErrorDetail: String?
 
     init() {
         downloadUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.downloadUnit) ?? "") ?? .auto
         uploadUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.uploadUnit) ?? "") ?? .auto
         chartWindow = ChartWindow(rawValue: defaults.integer(forKey: Keys.chartWindow)) ?? .fiveMinutes
         barMode = BarMode(rawValue: defaults.string(forKey: Keys.barMode) ?? "") ?? .full
+        barContent = BarContent(rawValue: defaults.string(forKey: Keys.barContent) ?? "") ?? .traffic
         speedTestInterval = SpeedTestInterval(rawValue: defaults.integer(forKey: Keys.speedTestInterval)) ?? .off
+        let storedLanguage = AppLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .system
+        language = storedLanguage
+        LocalizationState.shared.language = storedLanguage
 
         if let data = defaults.data(forKey: Keys.pingHosts),
            let hosts = try? JSONDecoder().decode([PingHost].self, from: data),
@@ -192,9 +223,9 @@ final class AppSettings: ObservableObject {
             } else {
                 try SMAppService.mainApp.unregister()
             }
-            launchAtLoginError = nil
+            launchAtLoginErrorDetail = nil
         } catch {
-            launchAtLoginError = "\(L("Couldn't change Launch at Login")): \(error.localizedDescription)"
+            launchAtLoginErrorDetail = error.localizedDescription
         }
         refreshLaunchAtLogin()
     }

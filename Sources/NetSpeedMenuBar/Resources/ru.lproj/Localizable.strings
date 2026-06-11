@@ -20,6 +20,10 @@
 	<string>Автотест</string>
 	<key>B/s</key>
 	<string>Б/с</string>
+	<key>Capacity values come from the periodic speed test.</key>
+	<string>Скорость канала обновляется периодическим спидтестом.</string>
+	<key>Channel capacity (speed test)</key>
+	<string>Скорость канала (спидтест)</string>
 	<key>Charts</key>
 	<string>Графики</string>
 	<key>Collecting data…</key>
@@ -32,6 +36,8 @@
 	<string>Не удалось изменить запуск при входе</string>
 	<key>Couldn't read per-app traffic (nettop).</key>
 	<string>Не удалось получить трафик по приложениям (nettop).</string>
+	<key>Current traffic</key>
+	<string>Текущий трафик</string>
 	<key>Details…</key>
 	<string>Подробнее…</string>
 	<key>Download</key>
@@ -72,6 +78,8 @@
 	<string>Кбит/с</string>
 	<key>Label</key>
 	<string>Подпись</string>
+	<key>Language</key>
+	<string>Язык</string>
 	<key>Last test</key>
 	<string>Последний тест</string>
 	<key>Launch at Login</key>
@@ -84,6 +92,8 @@
 	<string>МБ/с</string>
 	<key>Mbit/s</key>
 	<string>Мбит/с</string>
+	<key>Menu Bar Shows</key>
+	<string>В строке меню</string>
 	<key>Menu Bar Style</key>
 	<string>Вид строки меню</string>
 	<key>Network</key>
@@ -134,12 +144,14 @@
 	<string>Настройки…</string>
 	<key>Speed Test</key>
 	<string>Тест скорости</string>
+	<key>System</key>
+	<string>Системный</string>
 	<key>Test failed</key>
 	<string>Тест не удался</string>
 	<key>Testing…</key>
 	<string>Идёт тест…</string>
 	<key>The menu bar shows actual current traffic; channel capacity is measured by loading the connection, like any speed test.</key>
-	<string>В строке меню — фактический текущий трафик; ёмкость канала измеряется нагрузкой на соединение, как в любом спидтесте.</string>
+	<string>В строке меню — фактический текущий трафик; скорость канала измеряется нагрузкой на соединение, как в любом спидтесте.</string>
 	<key>This Month</key>
 	<string>Этот месяц</string>
 	<key>Time Window</key>
