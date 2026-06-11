@@ -2,12 +2,13 @@ import AppKit
 import SwiftUI
 
 /// Popover content: three chart cards (Download, Upload, Ping) stacked on the
-/// popover's system material, plus a header with the connection type, a
-/// settings gear, and Quit.
+/// popover's system material, plus a header with the connection type, a VPN
+/// badge, Details…, settings gear, and Quit.
 struct PopoverView: View {
     @ObservedObject var monitor: NetMonitor
     @ObservedObject var settings: AppSettings
     let onOpenSettings: () -> Void
+    let onOpenDetails: () -> Void
 
     var body: some View {
         let now = Date()
@@ -76,7 +77,21 @@ struct PopoverView: View {
             Text(monitor.connection.displayName)
                 .font(.headline)
                 .foregroundStyle(.primary)
+            if monitor.vpnActive {
+                Label(L("VPN"), systemImage: "lock.shield")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.thinMaterial, in: Capsule())
+                    .help(L("VPN Active"))
+                    .accessibilityLabel(L("VPN Active"))
+            }
             Spacer()
+            Button(L("Details…"), action: onOpenDetails)
+                .buttonStyle(.plain)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             Button(action: onOpenSettings) {
                 Image(systemName: "gearshape")
                     .font(.subheadline)
@@ -88,13 +103,13 @@ struct PopoverView: View {
             Button {
                 NSApp.terminate(nil)
             } label: {
-                Label(L("Quit"), systemImage: "power")
-                    .labelStyle(.titleAndIcon)
+                Image(systemName: "power")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
             .help(L("Quit NetSpeed"))
+            .accessibilityLabel(L("Quit"))
         }
         .padding(.horizontal, 2)
     }

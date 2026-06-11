@@ -49,11 +49,17 @@ final class NetMonitor: ObservableObject {
     @Published private(set) var jitter: Double? // ms, mean |Δ| of recent RTTs
     @Published private(set) var packetLoss: Double = 0 // percent over recent cycles
     @Published private(set) var connection: ConnectionType = .offline
+    @Published private(set) var physicalInterface: String?
+    @Published private(set) var vpnActive = false
+    @Published private(set) var vpnServiceNames: [String] = []
+    @Published private(set) var vpnInterface: String?
     @Published private(set) var downHistory: [Sample] = []
     @Published private(set) var upHistory: [Sample] = []
     @Published private(set) var pingHistory: [Sample] = []
 
     let settings: AppSettings
+    let usage = UsageTracker()
+    let connectivityLog = ConnectivityLog()
 
     // Buffers always hold the largest selectable window (1 hour), so shrinking
     // and re-growing the chart window never discards fresh data.
@@ -106,6 +112,7 @@ final class NetMonitor: ObservableObject {
         pingTimer = nil
         pathMonitor?.cancel()
         pathMonitor = nil
+        usage.save()
     }
 
     // MARK: - Speed
@@ -119,19 +126,19 @@ final class NetMonitor: ObservableObject {
         }
         guard let last = lastCounters, let lastTime = lastSampleTime else { return }
 
-        let dt = max(now - lastTime, 0.001)
         // Counters are 32-bit and wrap; clamp negative deltas to zero.
-        let down = counters.received >= last.received
-            ? Double(counters.received - last.received) / dt : 0
-        let up = counters.sent >= last.sent
-            ? Double(counters.sent - last.sent) / dt : 0
+        let deltaRx = counters.received >= last.received ? counters.received - last.received : 0
+        let deltaTx = counters.sent >= last.sent ? counters.sent - last.sent : 0
+        let dt = max(now - lastTime, 0.001)
 
-        downSpeed = down
-        upSpeed = up
+        downSpeed = Double(deltaRx) / dt
+        upSpeed = Double(deltaTx) / dt
+        usage.add(received: deltaRx, sent: deltaTx)
+
         speedSeq += 1
         let stamp = Date()
-        push(Sample(id: speedSeq, time: stamp, value: down), into: &downHistory, limit: speedHistoryLimit)
-        push(Sample(id: speedSeq, time: stamp, value: up), into: &upHistory, limit: speedHistoryLimit)
+        push(Sample(id: speedSeq, time: stamp, value: downSpeed), into: &downHistory, limit: speedHistoryLimit)
+        push(Sample(id: speedSeq, time: stamp, value: upSpeed), into: &upHistory, limit: speedHistoryLimit)
     }
 
     private func push(_ sample: Sample, into history: inout [Sample], limit: Int) {
@@ -193,14 +200,35 @@ final class NetMonitor: ObservableObject {
         }
     }
 
-    // MARK: - Connection type
+    // MARK: - Connection type & VPN
 
     private func startPathMonitor() {
         let monitor = NWPathMonitor()
         monitor.pathUpdateHandler = { [weak self] path in
-            let type = NetMonitor.classify(path)
+            let satisfied = path.status == .satisfied
+            let fallback = NetMonitor.classify(path)
+            // The default-route interface: a tunnel here means a VPN is
+            // actually routing traffic (idle utun* interfaces always exist).
+            let routeInterface = path.availableInterfaces.first?.name
+            let tunnel = routeInterface.flatMap { NetworkInfo.isTunnelName($0) ? $0 : nil }
+            // Physical carrier, independent of the default route, so Wi-Fi /
+            // Ethernet stays visible while a VPN holds the route.
+            let physical = NetworkInfo.activePhysical()
+            let vpnServices = NetworkInfo.connectedVPNServices()
+
             Task { @MainActor [weak self] in
-                self?.connection = type
+                guard let self else { return }
+                self.connectivityLog.update(satisfied: satisfied)
+                self.vpnInterface = tunnel
+                self.vpnServiceNames = vpnServices
+                self.vpnActive = tunnel != nil || !vpnServices.isEmpty
+                if satisfied {
+                    self.connection = physical?.type ?? fallback
+                    self.physicalInterface = physical?.bsdName
+                } else {
+                    self.connection = .offline
+                    self.physicalInterface = nil
+                }
             }
         }
         monitor.start(queue: DispatchQueue(label: "netspeed.pathmonitor"))

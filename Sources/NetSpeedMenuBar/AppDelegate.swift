@@ -11,9 +11,11 @@ final class PassthroughHostingView<Content: View>: NSHostingView<Content> {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings()
     private lazy var monitor = NetMonitor(settings: settings)
+    private let appTraffic = AppTrafficMonitor()
+    private let windowState = WindowState()
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
-    private var settingsWindow: NSWindow?
+    private var appWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -38,7 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
         guard let button = item.button else { return }
 
-        let hosting = PassthroughHostingView(rootView: StatusItemView(monitor: monitor))
+        let hosting = PassthroughHostingView(
+            rootView: StatusItemView(monitor: monitor, settings: settings)
+        )
         hosting.translatesAutoresizingMaskIntoConstraints = false
         button.addSubview(hosting)
         NSLayoutConstraint.activate([
@@ -57,9 +61,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let popover = NSPopover()
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(
-            rootView: PopoverView(monitor: monitor, settings: settings) { [weak self] in
-                self?.openSettings()
-            }
+            rootView: PopoverView(
+                monitor: monitor,
+                settings: settings,
+                onOpenSettings: { [weak self] in self?.openAppWindow(at: .settings) },
+                onOpenDetails: { [weak self] in self?.openAppWindow(at: .network) }
+            )
         )
         self.popover = popover
     }
@@ -101,6 +108,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let statusItem else { return }
         let menu = NSMenu()
 
+        let detailsItem = NSMenuItem(
+            title: L("Details…"),
+            action: #selector(openDetailsFromMenu),
+            keyEquivalent: "d"
+        )
+        detailsItem.target = self
+        menu.addItem(detailsItem)
+
         let settingsItem = NSMenuItem(
             title: L("Settings…"),
             action: #selector(openSettingsFromMenu),
@@ -127,25 +142,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openSettingsFromMenu() {
-        openSettings()
+        openAppWindow(at: .settings)
     }
 
-    // MARK: - Settings window
+    @objc private func openDetailsFromMenu() {
+        openAppWindow(at: .network)
+    }
 
-    func openSettings() {
+    // MARK: - Application window
+
+    private func openAppWindow(at section: AppSection) {
         popover?.performClose(nil)
-        if let window = settingsWindow {
+        windowState.section = section
+        if let window = appWindow {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate()
             return
         }
-        let hosting = NSHostingController(rootView: SettingsView(settings: settings))
+        let hosting = NSHostingController(
+            rootView: AppWindowView(
+                monitor: monitor,
+                settings: settings,
+                state: windowState,
+                appTraffic: appTraffic
+            )
+        )
         let window = NSWindow(contentViewController: hosting)
-        window.title = L("Settings")
-        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.title = "NetSpeed"
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.isReleasedWhenClosed = false
         window.center()
-        settingsWindow = window
+        window.setFrameAutosaveName("NetSpeedAppWindow")
+        appWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
     }

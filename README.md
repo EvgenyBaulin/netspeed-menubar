@@ -20,7 +20,21 @@ on Swift Charts and the Liquid Glass design language.
   never fake zero/negative points.
 - **Click-to-open panel** — an `NSPopover` with three separate Swift Charts
   (Download, Upload, Ping): smoothed lines, gradient fills, auto-scaled Y axis,
-  a time-based X axis, live 1-second updates while open.
+  a time-based X axis, live 1-second updates while open. **Hover or drag** on
+  any chart — in the panel and in the application window alike — to inspect
+  the exact value and timestamp (lollipop annotation).
+- **Menu bar styles** — Full (icon + stacked ↓/↑ + ping), Compact (icon + one
+  line), or Icon only; switchable live from Settings.
+- **Application window** (panel → Details…, or right-click menu):
+  - **Network** — the physical carrier (Wi-Fi / Ethernet) shown separately
+    from the **VPN tunnel**, so the real connection stays visible while a VPN
+    routes traffic; the panel also shows a small VPN badge when a tunnel is
+    active (detected via the default-route interface and `scutil --nc list`).
+  - **Apps** — per-process ↓/↑ rates sampled from `nettop`, sorted by usage.
+  - **Usage** — received/sent totals for the session, today, and this month,
+    with a reset button; day/month aggregates persist across launches.
+  - **Log** — connectivity outages with start time and duration, recorded
+    from `NWPathMonitor` transitions, persisted (last 200 events).
 - **Settings window** — gear button in the panel or right-click menu:
   - **Launch at Login** (`SMAppService`, needs the installed `.app`);
   - per-chart **units** for Download and Upload: Auto / Mbit/s / MB/s /
@@ -141,12 +155,31 @@ forward-compatible with **macOS 27**: the refined Liquid Glass appearance
 (improved legibility, transparency controls) is adopted automatically without
 code changes.
 
+## Notes on ping accuracy
+
+Ping RTT is parsed from `/sbin/ping` (`time=…`) as a fractional number — no
+integer rounding, no dividing by 1000. Values under 10 ms keep one decimal so
+small latencies don't collapse to "0 ms". A failed ping is a **gap** in the
+chart (no point), never a `-1`/`0` sentinel; the Y axis starts at 0 and lines
+use monotone interpolation, which cannot overshoot below the data minimum.
+The app's numbers match `ping -c 5 <host>` in a terminal by construction —
+it runs the same binary.
+
+Sub-millisecond readings to internet hosts usually mean something local is
+answering ICMP — typically an active VPN/proxy intercepting traffic (a real
+internet round-trip cannot be ~0.5 ms). That is the system's genuine output,
+not a parsing error; check the VPN badge in the panel.
+
 ## Limitations
 
 - **Personal Hotspot over Wi-Fi is shown as Wi-Fi.** Without private APIs, a
   hotspot joined over Wi-Fi is indistinguishable from a regular Wi-Fi network,
   so no guessing heuristics are applied. USB tethering ("iPhone USB") **is**
   detected reliably via its hardware-port name.
+- **Per-app traffic is an approximation.** There is no clean public API for
+  per-process traffic without a NetworkExtension content filter, so the Apps
+  section samples `nettop`; some system traffic may be unattributed. No
+  privilege escalation is used.
 - Ping uses the system `/sbin/ping` binary; if ICMP is blocked on your network,
   latency shows `—` and the chart has a gap.
 

@@ -25,6 +25,12 @@ struct SettingsView: View {
                 Text(L("Requires the installed app bundle (see README)."))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+                Picker(L("Menu Bar Style"), selection: $settings.barMode) {
+                    ForEach(BarMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
             }
 
             Section(L("Charts")) {
@@ -79,8 +85,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 420)
-        .frame(minHeight: 440)
         .onAppear { settings.refreshLaunchAtLogin() }
     }
 

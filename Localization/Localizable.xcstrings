@@ -325,6 +325,11 @@
       "localizations" : {
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Трафик по приложениям — приближение на основе nettop; часть системного трафика может не учитываться." } }
       }
+    },
+    "Couldn't read per-app traffic (nettop)." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось получить трафик по приложениям (nettop)." } }
+      }
     }
   },
   "version" : "1.0"

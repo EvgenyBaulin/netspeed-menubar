@@ -26,6 +26,8 @@
 	<string>Связь потеряна</string>
 	<key>Couldn't change Launch at Login</key>
 	<string>Не удалось изменить запуск при входе</string>
+	<key>Couldn't read per-app traffic (nettop).</key>
+	<string>Не удалось получить трафик по приложениям (nettop).</string>
 	<key>Details…</key>
 	<string>Подробнее…</string>
 	<key>Download</key>

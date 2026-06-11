@@ -40,6 +40,22 @@ enum ChartWindow: Int, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum BarMode: String, CaseIterable, Identifiable, Sendable {
+    case full
+    case compact
+    case iconOnly
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .full: return L("Full")
+        case .compact: return L("Compact")
+        case .iconOnly: return L("Icon Only")
+        }
+    }
+}
+
 /// Persistent user preferences (UserDefaults-backed) plus launch-at-login
 /// state, which lives in SMAppService rather than defaults.
 @MainActor
@@ -49,6 +65,7 @@ final class AppSettings: ObservableObject {
         static let uploadUnit = "uploadUnit"
         static let chartWindow = "chartWindowSeconds"
         static let pingHosts = "pingHosts"
+        static let barMode = "barMode"
     }
 
     static let defaultPingHost = "1.1.1.1"
@@ -64,6 +81,9 @@ final class AppSettings: ObservableObject {
     @Published var chartWindow: ChartWindow {
         didSet { defaults.set(chartWindow.rawValue, forKey: Keys.chartWindow) }
     }
+    @Published var barMode: BarMode {
+        didSet { defaults.set(barMode.rawValue, forKey: Keys.barMode) }
+    }
     @Published var pingHosts: [String] {
         didSet {
             if let data = try? JSONEncoder().encode(pingHosts) {
@@ -78,6 +98,7 @@ final class AppSettings: ObservableObject {
         downloadUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.downloadUnit) ?? "") ?? .auto
         uploadUnit = SpeedUnit(rawValue: defaults.string(forKey: Keys.uploadUnit) ?? "") ?? .auto
         chartWindow = ChartWindow(rawValue: defaults.integer(forKey: Keys.chartWindow)) ?? .fiveMinutes
+        barMode = BarMode(rawValue: defaults.string(forKey: Keys.barMode) ?? "") ?? .full
         if let data = defaults.data(forKey: Keys.pingHosts),
            let hosts = try? JSONDecoder().decode([String].self, from: data),
            !hosts.isEmpty {
