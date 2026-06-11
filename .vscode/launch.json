@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "name": "Debug NetSpeedMenuBar",
+      "args": [],
+      "cwd": "${workspaceFolder:netspeed-menubar}",
+      "preLaunchTask": "swift: Build Debug NetSpeedMenuBar",
+      "target": "NetSpeedMenuBar",
+      "configuration": "debug"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:netspeed-menubar}",
+      "name": "Release NetSpeedMenuBar",
+      "target": "NetSpeedMenuBar",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release NetSpeedMenuBar"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+.DS_Store
+.claude/
+.build
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/xcuserdata/
+prompt_macos_netspeed_menubar.md

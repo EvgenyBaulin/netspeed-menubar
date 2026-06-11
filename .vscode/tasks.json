@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "swift build",
+            "type": "shell",
+            "command": "swift",
+            "args": ["build"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "swift build (release)",
+            "type": "shell",
+            "command": "swift",
+            "args": ["build", "-c", "release"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

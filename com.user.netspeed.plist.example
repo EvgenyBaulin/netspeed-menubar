@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <!-- Copy to ~/Library/LaunchAgents/com.user.netspeed.plist and replace
+         the placeholder path with the location of your release binary,
+         e.g. /Users/YOUR_USERNAME/.local/bin/NetSpeedMenuBar -->
+        <key>Label</key>
+        <string>com.user.netspeed</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>/REPLACE/WITH/PATH/TO/NetSpeedMenuBar</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <false/>
+        <key>ProcessType</key>
+        <string>Interactive</string>
+    </dict>
+</plist>
