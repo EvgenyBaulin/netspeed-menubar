@@ -72,9 +72,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.performClose(nil)
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            repositionBelowMenuBar(popover: popover, button: button)
             popover.contentViewController?.view.window?.makeKey()
             NSApp.activate()
         }
+    }
+
+    /// The system can anchor a status-item popover so that it overlaps the
+    /// menu bar itself; move its window down so it sits fully below the bar.
+    private func repositionBelowMenuBar(popover: NSPopover, button: NSStatusBarButton) {
+        guard let popoverWindow = popover.contentViewController?.view.window,
+              let statusWindow = button.window
+        else { return }
+        let menuBarBottom = statusWindow.frame.minY
+        var frame = popoverWindow.frame
+        guard frame.maxY > menuBarBottom else { return }
+        frame.origin.y = menuBarBottom - frame.height
+        popoverWindow.setFrame(frame, display: true)
     }
 
     private func showContextMenu() {

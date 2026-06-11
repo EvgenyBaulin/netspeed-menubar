@@ -51,6 +51,27 @@ on Swift Charts and the Liquid Glass design language.
 > ln -sfn "$EXT" ".build"
 > ```
 
+## Build a standalone app bundle
+
+To get a regular `NetSpeedMac.app` you can keep in `/Applications` and launch
+from Spotlight:
+
+```bash
+zsh scripts/make-app.sh
+```
+
+This builds a release binary, assembles `dist/NetSpeedMac.app` (ad-hoc signed,
+`LSUIElement` — no Dock icon), and prints the resulting path. In VS Code it is
+also available as the **make NetSpeedMac.app** build task. Like `.build`,
+`dist` is a symlink to a folder outside iCloud — the script creates it
+automatically (iCloud's extended attributes would otherwise break strict
+code-signature verification).
+
+```bash
+cp -R dist/NetSpeedMac.app /Applications/
+open /Applications/NetSpeedMac.app
+```
+
 ## Run at login (LaunchAgent)
 
 1. Build a release binary:

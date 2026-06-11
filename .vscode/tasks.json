@@ -25,6 +25,17 @@
             },
             "group": "build",
             "problemMatcher": []
+        },
+        {
+            "label": "make NetSpeedMac.app",
+            "type": "shell",
+            "command": "zsh",
+            "args": ["scripts/make-app.sh"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": []
         }
     ]
 }
